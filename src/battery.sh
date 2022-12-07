@@ -46,35 +46,21 @@ while IFS= read -r line; do
         printf "\n";
 
         if [[ -n $lflag ]]; then
-            lighthouse $line --output json --output-path ../output/$count-lighthouse-result.json;
-            printf "Global Scores on Lighthouse:"
-            printf "\n";
-            printf "Performance:"
-            printf "\n";
-            jq '.categories.performance.score' ../output/$count-lighthouse-result.json;
-            printf "Accessibility:"
-            printf "\n";
-            jq '.categories.accessibility.score' ../output/$count-lighthouse-result.json;
-            printf "Best Practices:"
-            printf "\n";
-            jq '.categories."best-practices".score' ../output/$count-lighthouse-result.json;
-            printf "SEO:"
-            printf "\n";
-            jq '.categories.seo.score' ../output/$count-lighthouse-result.json;
+            lighthouse $line --output json --output-path ../output/$count-lighthouse-result.json &
         else
             echo "NO Lighthouse test, try -l next time";
         fi
 
         if [[ -n $yflag ]]; then
-            yellowlabtools $line > ../output/$count-yellow-lab-result.json;
-            printf "Global Score on Yellow Labs:"
-            jq '.scoreProfiles.generic.globalScore' ../output/$count-yellow-lab-result.json;
+            yellowlabtools $line > ../output/$count-yellow-lab-result.json &
+            # printf "Global Score on Yellow Labs:"
+            # jq '.scoreProfiles.generic.globalScore' ../output/$count-yellow-lab-result.json;
         else
             echo "NO YellowLabTools test, try -y next time";
         fi
 
         if [[ -n $sflag ]]; then
-            sitespeed.io $line --summary-detail --outputFolder ../output/$count-sitespeed-result/
+            sitespeed.io $line --summary-detail --outputFolder ../output/$count-sitespeed-result/ &
         else
             echo "NO Sitespeed test, try -s next time";
         fi
@@ -82,3 +68,38 @@ while IFS= read -r line; do
     fi
 
 done < urls.txt
+
+wait;
+
+# Output to STDOUT
+if [[ -n $lflag ]]; then
+    printf "Global Scores on Lighthouse:"
+    printf "\n";
+    printf "Performance:"
+    printf "\n";
+    jq '.categories.performance.score' ../output/$count-lighthouse-result.json;
+    printf "Accessibility:"
+    printf "\n";
+    jq '.categories.accessibility.score' ../output/$count-lighthouse-result.json;
+    printf "Best Practices:"
+    printf "\n";
+    jq '.categories."best-practices".score' ../output/$count-lighthouse-result.json;
+    printf "SEO:"
+    printf "\n";
+    jq '.categories.seo.score' ../output/$count-lighthouse-result.json;
+else
+    echo "NO lighthouse test, try -s next time";
+fi
+
+if [[ -n $yflag ]]; then
+    printf "Global Score on Yellow Labs:"
+    jq '.scoreProfiles.generic.globalScore' ../output/$count-yellow-lab-result.json;
+else
+    echo "NO yellow lab test, try -s next time";
+fi
+
+if [[ -n $sflag ]]; then
+    echo "THE END;";
+else
+    echo "NO Sitespeed test, try -s next time";
+fi
