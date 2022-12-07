@@ -35,6 +35,8 @@ while IFS= read -r line; do
         printf "the curl command failed for %s with: %s \n" "$line" "$res" | tee -a "$filename";
         
     else
+        printf "\n";
+        printf "\n";
         printf "The curl command was successful for %s. It exited with a status code of:" "$line" | tee -a "$filename";
         printf "%s" "$curl" | head -n 1 | tee -a "$filename";
         printf "\n";
@@ -71,13 +73,11 @@ while IFS= read -r line; do
             echo "NO YellowLabTools test, try -y next time";
         fi
 
-        # if [[ -n $sflag ]]; then
-        #     sitespeed.io $line 
-        # else
-        #     echo "NO Sitespeed test, try -s next time";
-        # fi
-
-        (( count++ ));
+        if [[ -n $sflag ]]; then
+            sitespeed.io $line --summary-detail --outputFolder ../output/$count-sitespeed-result/
+        else
+            echo "NO Sitespeed test, try -s next time";
+        fi
 
     fi
 
