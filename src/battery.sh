@@ -23,11 +23,17 @@ while getopts 'lys' flag; do
   esac
 done
 
-count=0;
-# date=$(date); 
-while IFS= read -r line; do
+date=$(date +%Y%m%d-%H-%M);
+while IFS= read -r line 
+do    
+    domain=$(echo $line | awk -F. '{print $2}'); 
+    tld=$(echo $line | awk -F. '{print $3}'); 
 
-    filename="../output/$count-report.txt";
+    filename="../output/$date/$domain-$tld-report.txt";
+
+    mkdir -p "../output/$date/";
+
+    touch "$filename";
 
     curl=$(curl -Is --max-time 15 "$line");
     res=$?
@@ -46,19 +52,19 @@ while IFS= read -r line; do
         printf "\n";
 
         if [[ -n $lflag ]]; then
-            lighthouse "$line" --output json --output-path ../output/$count-lighthouse-result.json &
+            lighthouse "$line" --output json --output-path ../output/$date/$domain-$tld-lighthouse-result.json &
         else
             echo "NO Lighthouse test, try -l next time";
         fi
 
         if [[ -n $yflag ]]; then
-            yellowlabtools "$line" > ../output/$count-yellow-lab-result.json &
+            yellowlabtools "$line" > ../output/$date/$domain-$tld-yellow-lab-result.json &
         else
             echo "NO YellowLabTools test, try -y next time";
         fi
 
         if [[ -n $sflag ]]; then
-            sitespeed.io "$line" --summary-detail --outputFolder ../output/$count-sitespeed-result/ &
+            sitespeed.io "$line" --summary-detail --outputFolder ../output/$date/$domain-$tld-sitespeed-result/ &
         else
             echo "NO Sitespeed test, try -s next time";
         fi
@@ -68,37 +74,55 @@ while IFS= read -r line; do
 done < urls.txt
 
 wait;
+# Important to wait
+
+# Write up report
+
+# while IFS= read -r line 
+# do    
+#     domain=$(echo $line | awk -F. '{print $2}'); 
+#     tld=$(echo $line | awk -F. '{print $3}'); 
+#     filename="../output/$date/$domain-$tld-report.txt";
+
+#     if [[ -n $yflag ]]; then
+#         jq '.scoreProfiles.generic.globalScore' ../output/$date/$domain-$tld-yellow-lab-result.json | tee -a "$filename";
+#     else
+#         echo "NO YellowLabTools test result to Report, try -y next time";
+#     fi
+
+# done < urls.txt
+
 
 # Output to STDOUT from gathered results.
-if [[ -n $lflag ]]; then
-    printf "Global Scores on Lighthouse:"
-    printf "\n";
-    printf "Performance:"
-    printf "\n";
-    jq '.categories.performance.score' ../output/$count-lighthouse-result.json;
-    printf "Accessibility:"
-    printf "\n";
-    jq '.categories.accessibility.score' ../output/$count-lighthouse-result.json;
-    printf "Best Practices:"
-    printf "\n";
-    jq '.categories."best-practices".score' ../output/$count-lighthouse-result.json;
-    printf "SEO:"
-    printf "\n";
-    jq '.categories.seo.score' ../output/$count-lighthouse-result.json;
-else
-   echo "";
-fi
+# if [[ -n $lflag ]]; then
+#     printf "Global Scores on Lighthouse:"
+#     printf "\n";
+#     printf "Performance:"
+#     printf "\n";
+#     jq '.categories.performance.score' ../output/$date/$count-lighthouse-result.json;
+#     printf "Accessibility:"
+#     printf "\n";
+#     jq '.categories.accessibility.score' ../output/$date/$count-lighthouse-result.json;
+#     printf "Best Practices:"
+#     printf "\n";
+#     jq '.categories."best-practices".score' ../output/$date/$count-lighthouse-result.json;
+#     printf "SEO:"
+#     printf "\n";
+#     jq '.categories.seo.score' ../output/$date/$count-lighthouse-result.json;
+# else
+#    echo "";
+# fi
 
-if [[ -n $yflag ]]; then
-    printf "Global Score on Yellow Labs:"
-    jq '.scoreProfiles.generic.globalScore' ../output/$count-yellow-lab-result.json;
-else
-    echo "";
+# if [[ -n $yflag ]]; then
+#     printf "Global Score on Yellow Labs:"
+#     jq '.scoreProfiles.generic.globalScore' ../output/$date/$count-yellow-lab-result.json;
+# else
+#     echo "";
 
-fi
+# fi
 
-if [[ -n $sflag ]]; then
-    echo "";
-else
-    echo "";
-fi
+# if [[ -n $sflag ]]; then
+#     echo "";
+# else
+#     echo "";
+# fi
