@@ -1,7 +1,7 @@
 # Web performance shell scripting with node/npm
 
 First: Enter the Source directory:
-# `cd src/` 
+### `cd src/` 
 
 Pre-requisites to install globally with NPM:
 
